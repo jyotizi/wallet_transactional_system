@@ -3,19 +3,24 @@ module RenderResponse
 
   STATUS_MESSAGES = {
     ok: "Success",
+    created: "Transaction successful Created",
     bad_request: "Bad Request",
     forbidden: "Permission Denied",
     too_many_requests: "Resource Exhausted",
     internal_server_error: "Internal Server Error",
     service_unavailable: "Service Unavailable",
-    gateway_timeout: "Gateway Timeout"
+    gateway_timeout: "Gateway Timeout",
+    unprocessable_entity: "Unprocessable Entity",
+    unauthorized: "Invalid email or password"
   }.freeze
 
-  def render_response(status: :ok, message: nil, data: {}, errors: nil)
-    render json: { message: message || STATUS_MESSAGES[status], data: data.presence, errors: errors.presence }, status: status
+  def render_json(status: :ok, message: nil, data: {}, errors: nil)
+    response_body = { message: message || STATUS_MESSAGES[status], data: data }
+    response_body[:errors] = errors if errors.present?
+    render json: response_body, status: status
   end
 
   def handle_exception(exception, status: :internal_server_error)
-    render_response(status: status, errors: [exception.message])
+    render_json(status: status, errors: [exception.message])
   end
 end

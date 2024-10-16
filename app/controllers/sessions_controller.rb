@@ -6,14 +6,14 @@ class SessionsController < ApplicationController
 
     if @user&.authenticate(params[:password])
       session[:user_id] = @user.id
-      render_response(message: "Loged in successfully!", data: { user_id: @user.id })
+      render_json(message: "Loged in successfully!", data: { user_id: @user.id })
     else
-      render_response(message: "Invalid email or password", status: :unauthorized)
+      render_json(status: :unauthorized)
     end
   end
 
   def destroy
     session[:user_id] = nil
-    render_response(message: "Loged out successfully!")
+    render_json(message: "Loged out successfully!")
   end
 end

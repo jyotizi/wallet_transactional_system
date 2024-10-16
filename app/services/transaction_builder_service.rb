@@ -1,4 +1,4 @@
-class TransactionBuilder
+class TransactionBuilderService
   def initialize(wallet, transaction_type, amount)
     @wallet = wallet
     @transaction_type = transaction_type

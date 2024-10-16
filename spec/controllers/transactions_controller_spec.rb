@@ -44,10 +44,20 @@ RSpec.describe TransactionsController, type: :controller do
     end
 
     context 'with an invalid transaction type' do
-      it 'raises an ArgumentError' do
+      it 'does not create a transaction' do
         expect {
           post :create, params: { walletable_type: 'User', walletable_id: user.id, transaction_type: 'invalid', amount: 100 }
-        }.to raise_error(ArgumentError, "Invalid transaction type")
+        }.to change(Transaction, :count).by(0)
+      end
+
+      it 'returns an error message' do
+        post :create, params: { walletable_type: 'User', walletable_id: user.id, transaction_type: 'invalid', amount: 100 }
+        expect(JSON.parse(response.body)).to include("message" => "Invalid transaction type. Allowed types are: credit, debit.")
+      end
+
+      it 'returns a status of :bad_request' do
+        post :create, params: { walletable_type: 'User', walletable_id: user.id, transaction_type: 'invalid', amount: 100 }
+        expect(response).to have_http_status(:bad_request)
       end
     end
   end
