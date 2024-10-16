@@ -1,25 +1,51 @@
-require 'httparty'
+require 'net/http'
+require 'json'
+require 'uri'
 
 class LatestStockPrice
-  include HTTParty
-  base_uri 'https://latest-stock-price.p.rapidapi.com'
+  BASE_URL = "https://rapidapi.com/suneetk92/api/latest-stock-price/".freeze
 
-  def initialize
-    @headers = {
-      "x-rapidapi-host" => "latest-stock-price.p.rapidapi.com",
-      "x-rapidapi-key" => "YOUR_RAPIDAPI_KEY"
-    }
+  def initialize(api_key)
+    @api_key = api_key
   end
 
-  def price(symbol)
-    self.class.get("/price?symbol=#{symbol}", headers: @headers)
+  def price(stock_symbol)
+    fetch_data("price/#{stock_symbol}")
   end
 
-  def prices(symbols)
-    self.class.get("/prices?symbols=#{symbols.join(',')}", headers: @headers)
+  def prices(stock_symbols)
+    fetch_data("prices?symbols=#{stock_symbols.join(',')}")
   end
 
   def price_all
-    self.class.get("/price_all", headers: @headers)
+    fetch_data("price_all")
+  end
+
+  private
+
+  def fetch_data(endpoint)
+    uri = URI.join(BASE_URL, endpoint)
+    response = send_request(uri)
+
+    parse_response(response)
+  end
+
+  def send_request(uri)
+    Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
+      request = Net::HTTP::Get.new(uri, headers)
+      http.request(request)
+    end
+  end
+
+  def headers
+    { "x-rapidapi-key" => @api_key }
+  end
+
+  def parse_response(response)
+    raise "API request failed with status #{response.code}" unless response.is_a?(Net::HTTPSuccess)
+
+    JSON.parse(response.body)
+  rescue JSON::ParserError => e
+    raise "Failed to parse JSON response: #{e.message}"
   end
 end

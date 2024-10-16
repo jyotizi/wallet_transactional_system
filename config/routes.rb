@@ -1,4 +1,5 @@
 Rails.application.routes.draw do
   resources :transactions, only: [:create]
-  post 'sessions', to: 'sessions#create'
+  post '/login', to: 'sessions#create'
+  delete '/logout', to: 'sessions#destroy'
 end
